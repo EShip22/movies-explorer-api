@@ -39,12 +39,10 @@ app.get('/crash-test', () => {
 
 app.post('/signup', users);
 app.post('/signin', users);
-
-app.use(errorLogger);
-
 app.use('*', auth, () => {
   throw new NotFoundError('Неверный URL');
 });
+app.use(errorLogger);
 app.use(errors());
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
