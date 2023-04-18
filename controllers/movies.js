@@ -6,7 +6,9 @@ const NotFoundError = require('../errors/not-found-err');
 const ValidationError = require('../errors/validation-err');
 
 module.exports.getMovies = (req, res, next) => {
-  movies.find({})
+  const owner = req.user._id;
+  console.log(owner);
+  movies.find({ owner })
     .then((resMovies) => {
       if (!resMovies) {
         throw new NotFoundError('Фильмы не найдены');

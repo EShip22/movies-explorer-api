@@ -22,7 +22,7 @@ router.post('/', auth, celebrate({
     trailerLink: Joi.string().required().pattern(httpRegexG),
     nameRU: Joi.string().required(),
     nameEN: Joi.string().required(),
-    movieId: Joi.string().required(),
+    movieId: Joi.number().required(),
     thumbnail: Joi.string().required().pattern(httpRegexG),
   }),
 }), createMovie);

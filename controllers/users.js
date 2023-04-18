@@ -33,7 +33,7 @@ module.exports.createUser = (req, res, next) => {
         return;
       }
       if (err.code === 11000) {
-        next(new AlreadyExistsEmailError('Ошибка валидации'));
+        next(new AlreadyExistsEmailError('Пользователь уже существует'));
         return;
       }
       next(err);
@@ -54,7 +54,7 @@ module.exports.login = (req, res, next) => {
           } else {
             const { NODE_ENV, JWT_SECRET } = process.env;
             try {
-              const _id = jwt.sign({ _id: finduser._id }, NODE_ENV === 'production' ? JWT_SECRET : 'some-secret-key');
+              const _id = jwt.sign({ _id: finduser._id }, NODE_ENV === 'production' ? JWT_SECRET : 'some-secret-key', { expiresIn: '7d' });
               res.status(200).send({ _id });
             } catch (err) {
               throw new IncorrectEmailPasswordError();
@@ -83,11 +83,11 @@ module.exports.getMeInfo = (req, res, next) => {
 
 module.exports.updateUser = (req, res, next) => {
   const {
-    name, about,
+    name, email,
   } = req.body;
   const { _id } = req.user;
 
-  users.findByIdAndUpdate(_id, { name, about }, { new: true, runValidators: true })
+  users.findByIdAndUpdate(_id, { name, email }, { new: true, runValidators: true })
     .then((resUser) => {
       if (!resUser) {
         throw new NotFoundError('Пользователь не найден');
@@ -98,6 +98,10 @@ module.exports.updateUser = (req, res, next) => {
     .catch((err) => {
       if (err.toString().indexOf('ValidationError') >= 0) {
         next(new ValidationError('Ошибка валидации'));
+        return;
+      }
+      if (err.codeName === 'DuplicateKey') {
+        next(new AlreadyExistsEmailError('Нельзя обновлять данные чужого пользователя'));
         return;
       }
       next(err);
